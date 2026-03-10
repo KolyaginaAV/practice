@@ -1,11 +1,11 @@
 package ci.nsu.moble.main
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -41,17 +41,6 @@ data class ColorItem(
     val color: Color
 )
 
-// Структура данных для хранения цветов
-private val colorsMap = mapOf( //mapOf - создаёт неизменяемую карту (словарь)
-    "Red" to Color.Red,
-    "Orange" to Color(0xFFFF9800), // Оранжевый - создание цвета из HEX-кода (0x - шестнадцатеричный формат, FF9800 - оранжевый)
-    "Yellow" to Color.Yellow,
-    "Green" to Color.Green,
-    "Blue" to Color.Blue,
-    "Indigo" to Color(0xFF3F51B5), // Индиго
-    "Violet" to Color(0xFF9C27B0)  // Фиолетовый
-)
-
 // Список цветов для отображения палитры
 private val colorsList = listOf(    //listOf - создаёт неизменяемый список
     ColorItem("Red", Color.Red),
@@ -62,6 +51,11 @@ private val colorsList = listOf(    //listOf - создаёт неизменяе
     ColorItem("Indigo", Color(0xFF3F51B5)),
     ColorItem("Violet", Color(0xFF9C27B0))
 )
+
+// Структура данных для хранения цветов
+private val colorsMap: Map<String, Color> = colorsList.associate { //associate - превращает список в словарь
+    colorItem -> colorItem.name.lowercase() to colorItem.color
+}
 
 @Composable //аннотация, означающая что это UI-компонент (User Interface)
 fun ColorSearchScreen(modifier: Modifier = Modifier) {
@@ -90,18 +84,23 @@ fun ColorSearchScreen(modifier: Modifier = Modifier) {
         // Кнопка (пока просто серая)
         Button(
             onClick = {
+                //приводит все буквы полученного слова к маленьким
+                val normalizedText = text.trim().lowercase()
                 // Поиск цвета в структуре данных (по ключу (названию))
-                val foundColor = colorsMap[text]
+                val foundColor = colorsMap[normalizedText]
 
                 if (foundColor != null) {
                     // Если цвет найден - меняем цвет кнопки
                     buttonColor = foundColor
-                    println("Цвет '$text' найден, применяю к кнопке")
+                    Log.i("Color", "Цвет '$text' найден, применяю к кнопке")
+                    // Verbose < Debug < Info < Warning < Error < WTF (What a Terrible Failure (Ужасный сбой))
+                    //Подробный, для откладки (для отслеживания работы приложения в процессе разработки)
+                    //информация, предупреждение, ошибка, ошибки, после которых приложение может "упасть"
                 }
                 else {
                     // Если цвет не найден - оставляем серый и пишем в лог
                     buttonColor = Color.Gray
-                    println("Пользовательский цвет '$text' не найден")
+                    Log.w("Color", "Пользовательский цвет '$text' не найден")
                 }
             },
             // Применяем цвет к кнопке
