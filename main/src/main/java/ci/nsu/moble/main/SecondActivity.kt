@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Home
@@ -29,9 +30,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
 import ci.nsu.moble.main.ui.theme.PracticeTheme
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import ci.nsu.moble.main.ui.Screens.HomeScreen
+import ci.nsu.moble.main.ui.Screens.ScreenOneContent
+import ci.nsu.moble.main.ui.Screens.ScreenTwoContent
 
 // TODO: crate sealed class with 3 routes
+// Sealed class (запечатанный класс) - это способ создать ограниченный набор возможных вариантов
+sealed class ScreenRoutes(val route: String) {
+    object Home : ScreenRoutes("home")
+    object ScreenOne : ScreenRoutes("screen_one")
+    object ScreenTwo : ScreenRoutes("screen_two")
+}
 
 class SecondActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,9 +62,13 @@ class SecondActivity : ComponentActivity() {
 @Composable
 fun SecondActivityScreen() {
     // todo: create nav controller
-    var selectedItem by remember { mutableStateOf(0) }
-    val context = LocalContext.current
-    var receivedText by remember { mutableStateOf("") }
+    val navController = rememberNavController() //Навигационный контроллер - "пульт управления" переключением экранов
+
+    var selectedItem by remember { mutableStateOf(0) } //Выбранный пункт в нижнем меню (0 - Home, 1 - Screen One, 2 - Screen Two)
+    val context = LocalContext.current //lоступ к контексту Android (чтобы работать с Intent и активностью)
+    var receivedText by remember { mutableStateOf("") } //текст, переданный из mainactivity
+
+    // Получаем переданные из MainActivity данные
     if (context is Activity) {
         receivedText = context.intent.getStringExtra("text_data") ?: "No text received"
     }
@@ -61,6 +78,7 @@ fun SecondActivityScreen() {
             title = { Text(receivedText) }, navigationIcon = {
                 IconButton(onClick = {
                     // TODO: create intent and start MainActivity
+                    // Просто закрываем текущую активность, возвращаемся в MainActivity
                     if (context is Activity) {
                         context.finish()
                     }
@@ -84,6 +102,15 @@ fun SecondActivityScreen() {
 
                 onClick = {
                     // TODO: navigate to home screen by navController
+                    navController.navigate(ScreenRoutes.Home.route) {
+                        //паттерн для BottomNavigation
+                        // Очищаем стек до начального пункта назначения
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true //сохраняем состояние текущего экрана
+                        }
+                        launchSingleTop = true //launchSingleTop - не создаем дубликаты экранов
+                        restoreState = true //restoreState - восстанавливаем состояние, если возвращаемся
+                    }
                     selectedItem = 0
                 })
             NavigationBarItem(
@@ -93,6 +120,13 @@ fun SecondActivityScreen() {
 
                 onClick = {
                     // TODO: navigate to screen one
+                    navController.navigate(ScreenRoutes.ScreenOne.route) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                     selectedItem = 1
                 })
             NavigationBarItem(
@@ -101,13 +135,33 @@ fun SecondActivityScreen() {
                 selected = selectedItem == 2,
                 onClick = {
                     // TODO: navigate to screen two
+                    navController.navigate(ScreenRoutes.ScreenTwo.route) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
                     selectedItem = 2
                 })
         }
     }) { innerPadding ->
-        // TODO: create a nav graph with 3 screens
-        // NavHost() {}
-        // composable(Screen.Home.route) { HomeScreen() }
+        // TODO: create a nav graph with 3 screens - create a nav graph with 3 screens
+        NavHost(
+            navController = navController,
+            startDestination = ScreenRoutes.Home.route, // Стартовый экран
+            modifier = Modifier.padding(innerPadding) // Отступы от панелей
+        ) {
+            composable(ScreenRoutes.Home.route) {  // Когда маршрут "home" - показываем HomeScreen
+                HomeScreen()
+            }
+            composable(ScreenRoutes.ScreenOne.route) {
+                ScreenOneContent()
+            }
+            composable(ScreenRoutes.ScreenTwo.route) {
+                ScreenTwoContent()
+            }
+        }
     }
 }
 

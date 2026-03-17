@@ -8,6 +8,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Draft">
+        <!-- android:exported="true" означает, что активность может быть запущена из других приложений -->
+        <!-- <intent-filter>: означает, что эта активность — главная (MAIN) и должна отображаться в списке приложений -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -19,6 +21,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- здесь нет intent-filter, значит, она может быть запущена только явно изнутри приложения -->
         <activity android:name=".SecondActivity"/>
     </application>
 
