@@ -88,6 +88,20 @@ fun TemperatureScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
+        Button(
+            onClick = { viewModel.clearFields() },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onSecondary
+            )
+        ) {
+            Text(
+                text = "Очистить всё",
+                style = MaterialTheme.typography.titleMedium
+            )
+        }
+
         Card( //Карточка с формулами конвертации
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
