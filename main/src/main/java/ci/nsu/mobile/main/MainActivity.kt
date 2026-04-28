@@ -1,6 +1,7 @@
 package ci.nsu.mobile.main
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -8,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ci.nsu.mobile.main.ui.theme.DraftTheme
@@ -21,7 +23,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainScreen()
+                    NavigationGraph()
                 }
             }
         }
@@ -29,13 +31,18 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    onNavigateToInput: () -> Unit,
+    onNavigateToHistory: () -> Unit
+) {
+    val context = LocalContext.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
     ) {
         Text(
             text = "Расчёт вкладов",
@@ -46,7 +53,10 @@ fun MainScreen() {
         Spacer(modifier = Modifier.height(48.dp))
 
         Button(
-            onClick = { /* Пока пусто */ },
+            onClick = {
+                Toast.makeText(context, "Кнопка нажата!", Toast.LENGTH_SHORT).show()
+                onNavigateToInput()
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Рассчитать")
@@ -55,7 +65,7 @@ fun MainScreen() {
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = { /* Пока пусто */ },
+            onClick = onNavigateToHistory,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("История расчётов")
