@@ -4,17 +4,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import android.widget.Toast
 
 @Composable
 fun InputFirstScreen(
     onNavigateBack: () -> Unit,
     onNavigateToSecond: (Double, Int) -> Unit
 ) {
-    val context = LocalContext.current
     var initialAmount by remember { mutableStateOf("") }
     var periodMonths by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
@@ -78,13 +75,10 @@ fun InputFirstScreen(
 
                     if (amount == null || amount <= 0.0) {
                         errorMessage = "Введите корректную сумму (>0)"
-                        Toast.makeText(context, "Ошибка: неверная сумма", Toast.LENGTH_SHORT).show()
                     } else if (period == null || period <= 0) {
                         errorMessage = "Введите корректный срок (>0)"
-                        Toast.makeText(context, "Ошибка: неверный срок", Toast.LENGTH_SHORT).show()
                     } else {
                         errorMessage = ""
-                        Toast.makeText(context, "Успех! Сумма: $amount, Срок: $period", Toast.LENGTH_LONG).show()
                         onNavigateToSecond(amount, period)
                     }
                 },

@@ -1,15 +1,13 @@
 package ci.nsu.mobile.main
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ci.nsu.mobile.main.ui.theme.DraftTheme
@@ -35,14 +33,12 @@ fun MainScreen(
     onNavigateToInput: () -> Unit,
     onNavigateToHistory: () -> Unit
 ) {
-    val context = LocalContext.current
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
+        verticalArrangement = Arrangement.Center
     ) {
         Text(
             text = "Расчёт вкладов",
@@ -53,10 +49,7 @@ fun MainScreen(
         Spacer(modifier = Modifier.height(48.dp))
 
         Button(
-            onClick = {
-                Toast.makeText(context, "Кнопка нажата!", Toast.LENGTH_SHORT).show()
-                onNavigateToInput()
-            },
+            onClick = onNavigateToInput,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Рассчитать")

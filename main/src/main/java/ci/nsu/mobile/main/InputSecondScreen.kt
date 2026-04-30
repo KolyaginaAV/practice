@@ -4,10 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import android.widget.Toast
 
 @Composable
 fun InputSecondScreen(
@@ -16,11 +14,6 @@ fun InputSecondScreen(
     onNavigateBack: () -> Unit,
     onNavigateToResult: (Double, Double) -> Unit
 ) {
-    val context = LocalContext.current
-
-    // Проверка: показываем Toast сразу при загрузке экрана
-    Toast.makeText(context, "Второй экран получил: сумма=$initialAmount, срок=$periodMonths", Toast.LENGTH_LONG).show()
-
     var monthlyTopUp by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
 
@@ -103,10 +96,8 @@ fun InputSecondScreen(
                     val topUp = monthlyTopUp.toDoubleOrNull() ?: 0.0
                     if (topUp < 0) {
                         errorMessage = "Пополнение не может быть отрицательным"
-                        Toast.makeText(context, "Ошибка: отрицательное пополнение", Toast.LENGTH_SHORT).show()
                     } else {
                         errorMessage = ""
-                        Toast.makeText(context, "Переход на результат: пополнение=$topUp, ставка=$selectedRate", Toast.LENGTH_SHORT).show()
                         onNavigateToResult(topUp, selectedRate)
                     }
                 },
