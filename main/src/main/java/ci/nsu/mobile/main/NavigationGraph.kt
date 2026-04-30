@@ -5,6 +5,8 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.lifecycle.viewmodel.compose.viewModel
+import android.widget.Toast
 
 sealed class Screen(val route: String) {
     object Main : Screen("main")
@@ -71,13 +73,34 @@ fun NavigationGraph() {
             val rate = rateStr.toDoubleOrNull() ?: 0.0
             val topUp = topUpStr.toDoubleOrNull() ?: 0.0
 
+            // Создаём ViewModel
+            val viewModel: ResultViewModel = viewModel()
+
+            // Рассчитываем итоговую сумму и проценты
+            val (finalAmount, interestEarned) = calculateDeposit(
+                initialAmount = amount,
+                periodMonths = period,
+                annualRate = rate,
+                monthlyTopUp = topUp
+            )
+
             ResultScreen(
                 initialAmount = amount,
                 periodMonths = period,
                 interestRate = rate,
                 monthlyTopUp = topUp,
                 onSave = {
-                    // Сохранение расчёта (будет позже)
+                    viewModel.saveCalculation(
+                        initialAmount = amount,
+                        periodMonths = period,
+                        interestRate = rate,
+                        monthlyTopUp = topUp,
+                        finalAmount = finalAmount,
+                        interestEarned = interestEarned,
+                        onSuccess = {
+                            Toast.makeText(navController.context, "Расчёт сохранён!", Toast.LENGTH_SHORT).show()
+                        }
+                    )
                 },
                 onBackToMain = {
                     navController.popBackStack(Screen.Main.route, inclusive = false)
