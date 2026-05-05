@@ -18,4 +18,12 @@ class HistoryViewModel(application: Application) : AndroidViewModel(application)
     suspend fun getCalculationById(id: Long): DepositCalculation? {
         return repository.getCalculationById(id)
     }
+
+    //удаление расчёта
+    fun deleteCalculation(calculation: DepositCalculation, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            repository.deleteCalculation(calculation)
+            onSuccess()
+        }
+    }
 }

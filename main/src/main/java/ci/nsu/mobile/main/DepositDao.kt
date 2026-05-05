@@ -1,6 +1,7 @@
 package ci.nsu.mobile.main
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
@@ -20,4 +21,7 @@ interface DepositDao {
     //:id — подставляем параметр функции
     //DepositCalculation? — может вернуть запись или null (если не найдена)
     suspend fun getCalculationById(id: Long): DepositCalculation?
+
+    @Delete
+    suspend fun delete(calculation: DepositCalculation)
 }

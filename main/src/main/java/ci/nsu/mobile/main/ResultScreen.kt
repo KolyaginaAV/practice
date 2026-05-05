@@ -3,7 +3,7 @@ package ci.nsu.mobile.main
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -19,6 +19,9 @@ fun ResultScreen(
     onSave: () -> Unit,
     onBackToMain: () -> Unit
 ) {
+    // Флаг, показывающий, был ли уже сохранён этот расчёт
+    var isSaved by remember { mutableStateOf(false) }
+
     // Вызываем функцию расчёта
     val (finalAmount, interestEarned) = calculateDeposit(
         initialAmount = initialAmount,
@@ -27,59 +30,45 @@ fun ResultScreen(
         monthlyTopUp = monthlyTopUp
     )
 
-    // Основной контейнер (вертикальная колонка)
     Column(
         modifier = Modifier
-            .fillMaxSize()           // на весь экран
-            .padding(16.dp),        // отступы со всех сторон
-        verticalArrangement = Arrangement.spacedBy(16.dp)  // расстояние между элементами
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Заголовок
         Text(
             text = "Результат расчёта",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold
         )
 
-        // Карточка с результатами
         Card(
-            modifier = Modifier.fillMaxWidth(),  // карточка на всю ширину
-            shape = RoundedCornerShape(16.dp),   // скруглённые углы
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)  // тень
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
-            // Внутренности карточки
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Строка: Стартовый взнос
                 InfoRow("Стартовый взнос:", String.format("%.2f ₽", initialAmount))
-
-                // Строка: Срок вклада
                 InfoRow("Срок вклада:", "$periodMonths мес.")
-
-                // Строка: Процентная ставка
                 InfoRow("Процентная ставка:", String.format("%.1f %%", interestRate))
 
-                // Строка: Ежемесячное пополнение (только если > 0)
                 if (monthlyTopUp > 0) {
                     InfoRow("Ежемесячное пополнение:", String.format("%.2f ₽", monthlyTopUp))
                 }
 
-                // Разделительная линия
                 Divider()
 
-                // Строка: Итоговая сумма (жирным шрифтом)
                 InfoRow(
                     "Итоговая сумма:",
                     String.format("%.2f ₽", finalAmount),
                     isBold = true,
                     textColor = MaterialTheme.colorScheme.primary
                 )
-
-                // Строка: Начисленные проценты
                 InfoRow(
                     "Начисленные проценты:",
                     String.format("%.2f ₽", interestEarned),
@@ -88,23 +77,26 @@ fun ResultScreen(
             }
         }
 
-        // "Распорка" - занимает всё свободное место, прижимая кнопки вниз
         Spacer(modifier = Modifier.weight(1f))
 
-        // Кнопки в ряд
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Кнопка "Сохранить"
+            // Кнопка "Сохранить" - отключается после сохранения
             Button(
-                onClick = onSave,
-                modifier = Modifier.weight(1f)  // занимает половину ширины
+                onClick = {
+                    if (!isSaved) {
+                        isSaved = true  // помечаем как сохранённый
+                        onSave()
+                    }
+                },
+                modifier = Modifier.weight(1f),
+                enabled = !isSaved  // блокируем кнопку после сохранения
             ) {
-                Text("Сохранить")
+                Text(if (isSaved) "Сохранено!" else "Сохранить")
             }
 
-            // Кнопка "В начало"
             Button(
                 onClick = onBackToMain,
                 modifier = Modifier.weight(1f)
@@ -112,10 +104,20 @@ fun ResultScreen(
                 Text("В начало")
             }
         }
+
+        // Если расчёт уже сохранён, показываем подсказку
+        if (isSaved) {
+            Text(
+                text = "✓ Расчёт уже сохранён в истории",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
     }
 }
 
-// Вспомогательный компонент для отображения одной строки (название + значение)
+// InfoRow и calculateDeposit остаются без изменений
 @Composable
 fun InfoRow(
     label: String,
@@ -125,7 +127,7 @@ fun InfoRow(
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween  // название слева, значение справа
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
             text = label,
@@ -141,29 +143,22 @@ fun InfoRow(
     }
 }
 
-// Функция расчёта вклада (формула)
 fun calculateDeposit(
     initialAmount: Double,
     periodMonths: Int,
     annualRate: Double,
     monthlyTopUp: Double
 ): Pair<Double, Double> {
-    // Месячная процентная ставка (например, 5% годовых = 5/100/12 = 0.004166...)
     val monthlyRate = annualRate / 100 / 12
+    var total = initialAmount
 
-    var total = initialAmount  // начинаем с начальной суммы
-
-    // Для каждого месяца
     for (month in 1..periodMonths) {
-        total += total * monthlyRate  // начисляем проценты на текущую сумму
+        total += total * monthlyRate
         if (monthlyTopUp > 0) {
-            total += monthlyTopUp      // добавляем пополнение (в конце месяца)
+            total += monthlyTopUp
         }
     }
 
-    // Начисленные проценты = итог - начальный взнос - все пополнения
     val interestEarned = total - initialAmount - (monthlyTopUp * periodMonths)
-
-    // Возвращаем пару чисел: (итоговая сумма, начисленные проценты)
     return Pair(total, interestEarned)
 }
