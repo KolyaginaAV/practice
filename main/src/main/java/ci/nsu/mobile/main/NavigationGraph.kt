@@ -1,6 +1,6 @@
 package ci.nsu.mobile.main
 
-import androidx.compose.material3.Text
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -15,7 +15,10 @@ sealed class Screen(val route: String) {
     object Result : Screen("result")
     object History : Screen("history")
     object HistoryDetail : Screen("history_detail/{calculationId}") {
-        fun passId(id: Long): String = "history_detail/$id"
+        fun passId(id: Long): String {
+            Log.d("Screen", "passId вызывается с id: $id")
+            return "history_detail/$id"
+        }
     }
 }
 
@@ -97,8 +100,9 @@ fun NavigationGraph() {
                         monthlyTopUp = topUp,
                         finalAmount = finalAmount,
                         interestEarned = interestEarned,
-                        onSuccess = {
-                            Toast.makeText(navController.context, "Расчёт сохранён!", Toast.LENGTH_SHORT).show()
+                        onSuccess = { savedId ->
+                            android.util.Log.d("SaveCalculation", "Получен ID от ViewModel: $savedId")
+                            Toast.makeText(navController.context, "Расчёт сохранён! ID: $savedId", Toast.LENGTH_LONG).show()
                         }
                     )
                 },
@@ -109,12 +113,24 @@ fun NavigationGraph() {
         }
 
         composable(Screen.History.route) {
-            Text(text = "Экран истории (будет позже)")
+            val viewModel: HistoryViewModel = viewModel()
+            HistoryScreen(
+                onNavigateToDetail = { calculationId ->
+                    navController.navigate(Screen.HistoryDetail.passId(calculationId))
+                }
+            )
         }
 
         composable(Screen.HistoryDetail.route) { backStackEntry ->
-            val id = backStackEntry.arguments?.getLong("calculationId") ?: 0
-            Text(text = "Детали расчёта #${id} (будет позже)")
+            val calculationIdStr = backStackEntry.arguments?.getString("calculationId") ?: "0"
+            val calculationId = calculationIdStr.toLongOrNull() ?: 0
+
+            Log.d("NavigationGraph", "Получен ID: $calculationId")
+
+            HistoryDetailScreen(
+                calculationId = calculationId,
+                onBack = { navController.popBackStack() }
+            )
         }
     }
 }

@@ -3,10 +3,11 @@ package ci.nsu.mobile.main
 import kotlinx.coroutines.flow.Flow
 
 // класс-посредник между ViewModel и базой данных
+// Зачем нужен: Если позже понадобится брать данные из интернета — меняем только Repository.
 class DepositRepository(private val dao: DepositDao) { //принимает DAO при создании и сохраняет в приватное поле
 
-    suspend fun saveCalculation(calculation: DepositCalculation) {
-        dao.insert(calculation) //вызывает insert из DAO
+    suspend fun saveCalculation(calculation: DepositCalculation): Long {
+        return dao.insert(calculation) //вызывает insert из DAO
     }
 
     fun getAllCalculations(): Flow<List<DepositCalculation>> {

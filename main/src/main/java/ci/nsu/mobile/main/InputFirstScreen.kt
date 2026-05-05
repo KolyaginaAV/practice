@@ -9,12 +9,12 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun InputFirstScreen(
-    onNavigateBack: () -> Unit,
-    onNavigateToSecond: (Double, Int) -> Unit
+    onNavigateBack: () -> Unit,  // возврат на главный
+    onNavigateToSecond: (Double, Int) -> Unit // переход на второй экран с данными
 ) {
-    var initialAmount by remember { mutableStateOf("") }
-    var periodMonths by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf("") }
+    var initialAmount by remember { mutableStateOf("") } // строка из поля ввода
+    var periodMonths by remember { mutableStateOf("") } // строка из поля ввода
+    var errorMessage by remember { mutableStateOf("") } // сообщение об ошибке
 
     Column(
         modifier = Modifier
@@ -77,7 +77,7 @@ fun InputFirstScreen(
                         errorMessage = "Введите корректную сумму (>0)"
                     } else if (period == null || period <= 0) {
                         errorMessage = "Введите корректный срок (>0)"
-                    } else {
+                    } else { //только если нет ошибок
                         errorMessage = ""
                         onNavigateToSecond(amount, period)
                     }

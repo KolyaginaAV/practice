@@ -12,17 +12,17 @@ class ResultViewModel(application: Application) : AndroidViewModel(application) 
     private val database = AppDatabase.getDatabase(application) //Получаем экземпляр базы данных
     private val repository = DepositRepository(database.depositDao()) //Создаём репозиторий, передаём ему DAO
 
-    fun saveCalculation( //Функция сохранения расчёта
+    fun saveCalculation(
         initialAmount: Double,
         periodMonths: Int,
         interestRate: Double,
         monthlyTopUp: Double,
         finalAmount: Double,
         interestEarned: Double,
-        onSuccess: () -> Unit //onSuccess: () -> Unit — callback, который выполнится после сохранения
+        onSuccess: (Long) -> Unit
     ) {
-        viewModelScope.launch {
-            val calculation = DepositCalculation( //Создаём объект для сохранения
+        viewModelScope.launch { // корутина для фоновой работы
+            val calculation = DepositCalculation(
                 initialAmount = initialAmount,
                 periodMonths = periodMonths,
                 interestRate = interestRate,
@@ -30,8 +30,9 @@ class ResultViewModel(application: Application) : AndroidViewModel(application) 
                 finalAmount = finalAmount,
                 interestEarned = interestEarned
             )
-            repository.saveCalculation(calculation) //Сохраняем через репозиторий
-            onSuccess()
+            val id = repository.saveCalculation(calculation)  // ← получаем ID
+            android.util.Log.d("ResultViewModel", "Сохранение завершено, получен ID = $id")
+            onSuccess(id)
         }
     }
 }

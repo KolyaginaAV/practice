@@ -15,8 +15,8 @@ import ci.nsu.mobile.main.ui.theme.DraftTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            DraftTheme {
+        setContent { // устанавливаем Compose-интерфейс
+            DraftTheme { // применяем тему оформления
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
