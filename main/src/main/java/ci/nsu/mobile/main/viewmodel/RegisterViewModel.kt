@@ -9,8 +9,7 @@ import ci.nsu.mobile.main.data.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
-import java.io.IOException
+import java.util.Calendar
 
 class RegisterViewModel(
     private val authRepository: AuthRepository
@@ -100,7 +99,7 @@ class RegisterViewModel(
             return Pair(false, "❌ Неверный формат даты рождения\n   Нужно: ГГГГ-ММ-ДД (например, 2007-10-10)\n   Вы ввели: $birthDate")
         }
 
-        // Проверка корректности даты (год, месяц, день)
+        // Проверка корректности даты
         try {
             val parts = birthDate.split("-")
             val year = parts[0].toInt()
@@ -116,6 +115,15 @@ class RegisterViewModel(
             if (day < 1 || day > 31) {
                 return Pair(false, "❌ День должен быть от 01 до 31")
             }
+
+            // Дополнительная проверка на правильность даты (например, 31 февраля не пройдет)
+            val calendar = Calendar.getInstance()
+            calendar.set(year, month - 1, 1)
+            val maxDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+            if (day > maxDay) {
+                return Pair(false, "❌ Неверная дата: в $month месяце не может быть $day дней")
+            }
+
         } catch (e: Exception) {
             return Pair(false, "❌ Неверный формат даты\n   Используйте: ГГГГ-ММ-ДД (например, 2007-10-10)")
         }
