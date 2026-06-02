@@ -1,9 +1,13 @@
 package ci.nsu.mobile.main.ui.screens
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.ui.Alignment.Companion.CenterVertically
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -37,13 +41,19 @@ fun RegisterScreen(
     val uiState by registerViewModel.uiState.collectAsState()
     val groups by registerViewModel.groups.collectAsState()
 
-    var expanded by remember { mutableStateOf(false) }
+    // Состояния для выпадающих списков
+    var groupExpanded by remember { mutableStateOf(false) }
+    var genderExpanded by remember { mutableStateOf(false) }
+
     val scrollState = rememberScrollState()
+
+    // Список возможных значений пола
+    val genderOptions = listOf("MALE", "FEMALE")
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(scrollState) // позволяет скроллить форму, когда она не помещается на экране
+            .verticalScroll(scrollState)
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -55,6 +65,7 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // ============== ФАМИЛИЯ ==============
         OutlinedTextField(
             value = uiState.lastName,
             onValueChange = { registerViewModel.updateField("lastName", it) },
@@ -65,6 +76,7 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // ============== ИМЯ ==============
         OutlinedTextField(
             value = uiState.firstName,
             onValueChange = { registerViewModel.updateField("firstName", it) },
@@ -75,6 +87,7 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // ============== ОТЧЕСТВО ==============
         OutlinedTextField(
             value = uiState.middleName,
             onValueChange = { registerViewModel.updateField("middleName", it) },
@@ -85,52 +98,50 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // ============== ДАТА РОЖДЕНИЯ ==============
         OutlinedTextField(
             value = uiState.birthDate,
             onValueChange = { registerViewModel.updateField("birthDate", it) },
             label = { Text("Дата рождения (ГГГГ-ММ-ДД)") },
             modifier = Modifier.fillMaxWidth(),
-            enabled = !uiState.isLoading
+            enabled = !uiState.isLoading,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(
-            value = uiState.gender,
-            onValueChange = { registerViewModel.updateField("gender", it) },
-            label = { Text("Пол (MALE/FEMALE)") },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = !uiState.isLoading
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
+        // ============== ПОЛ (ВЫПАДАЮЩИЙ СПИСОК) ==============
         ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = it }
+            expanded = genderExpanded,
+            onExpandedChange = { genderExpanded = it }
         ) {
             OutlinedTextField(
-                value = groups.find { it.id == uiState.selectedGroupId }?.name ?: "",
+                value = uiState.gender,
                 onValueChange = {},
                 readOnly = true,
-                label = { Text("Группа") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                //ExposedDropdownMenuBox - выпадающий список для выбора группы
+                label = { Text("Пол") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = genderExpanded) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .menuAnchor(),
-                enabled = !uiState.isLoading
+                enabled = !uiState.isLoading,
+                placeholder = { Text("Выберите пол") }
             )
             ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
+                expanded = genderExpanded,
+                onDismissRequest = { genderExpanded = false }
             ) {
-                groups.forEach { group ->
+                genderOptions.forEach { gender ->
                     DropdownMenuItem(
-                        text = { Text(group.name) },
+                        text = {
+                            Text(
+                                if (gender == "MALE") "Мужской" else "Женский",
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        },
                         onClick = {
-                            registerViewModel.selectGroup(group.id)
-                            expanded = false
+                            registerViewModel.updateField("gender", gender)
+                            genderExpanded = false
                         }
                     )
                 }
@@ -139,6 +150,42 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // ============== ГРУППА (ВЫПАДАЮЩИЙ СПИСОК) ==============
+        ExposedDropdownMenuBox(
+            expanded = groupExpanded,
+            onExpandedChange = { groupExpanded = it }
+        ) {
+            OutlinedTextField(
+                value = groups.find { it.id == uiState.selectedGroupId }?.name ?: "",
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Группа") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = groupExpanded) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(),
+                enabled = !uiState.isLoading,
+                placeholder = { Text("Выберите группу") }
+            )
+            ExposedDropdownMenu(
+                expanded = groupExpanded,
+                onDismissRequest = { groupExpanded = false }
+            ) {
+                groups.forEach { group ->
+                    DropdownMenuItem(
+                        text = { Text(group.name, modifier = Modifier.fillMaxWidth()) },
+                        onClick = {
+                            registerViewModel.selectGroup(group.id)
+                            groupExpanded = false
+                        }
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // ============== ЛОГИН ==============
         OutlinedTextField(
             value = uiState.login,
             onValueChange = { registerViewModel.updateField("login", it) },
@@ -149,6 +196,7 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // ============== ПАРОЛЬ ==============
         OutlinedTextField(
             value = uiState.password,
             onValueChange = { registerViewModel.updateField("password", it) },
@@ -160,33 +208,38 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // ============== EMAIL ==============
         OutlinedTextField(
             value = uiState.email,
             onValueChange = { registerViewModel.updateField("email", it) },
             label = { Text("Email") },
             modifier = Modifier.fillMaxWidth(),
-            enabled = !uiState.isLoading
+            enabled = !uiState.isLoading,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // ============== ТЕЛЕФОН ==============
         OutlinedTextField(
             value = uiState.phoneNumber,
             onValueChange = { registerViewModel.updateField("phoneNumber", it) },
             label = { Text("Телефон") },
             modifier = Modifier.fillMaxWidth(),
-            enabled = !uiState.isLoading
+            enabled = !uiState.isLoading,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // ============== КНОПКА РЕГИСТРАЦИИ ==============
         if (uiState.isLoading) {
             CircularProgressIndicator()
         } else {
             Button(
                 onClick = { registerViewModel.register(onRegisterSuccess) },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = true  // временно для теста
+                enabled = uiState.selectedGroupId != 0 && uiState.gender.isNotBlank()
             ) {
                 Text("Зарегистрироваться")
             }
@@ -194,6 +247,7 @@ fun RegisterScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // ============== ССЫЛКА НА ВХОД ==============
         TextButton(
             onClick = onNavigateToLogin,
             modifier = Modifier.fillMaxWidth(),
@@ -202,12 +256,41 @@ fun RegisterScreen(
             Text("Уже есть аккаунт? Войти")
         }
 
+        // ============== ОТОБРАЖЕНИЕ ОШИБКИ ==============
         if (uiState.error != null) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = uiState.error ?: "",
-                color = MaterialTheme.colorScheme.error
-            )
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Row(
+                        verticalAlignment = CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Warning,
+                            contentDescription = "Ошибка",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Ошибка регистрации",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = uiState.error ?: "",
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
